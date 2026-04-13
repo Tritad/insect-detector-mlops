@@ -1,3 +1,9 @@
+---
+title: insect-detector-demo
+sdk: docker
+app_port: 7860
+---
+
 # High-Throughput Image Classification Service (MLOps)
 
 This project provides a production-oriented FastAPI service for high-throughput insect image classification using MobileNetV2 (fine-tuned), ONNX, and optimized CPU inference.
