@@ -103,13 +103,15 @@ jobs:
           AUTH_REPO_URL="https://oauth2:${HF_TOKEN_CLEAN}@huggingface.co/spaces/${HF_SPACE_REPO_CLEAN}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "${AUTH_REPO_URL}"
+          git pull --rebase origin main || true
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to deploy."
             exit 0
           fi
           git commit -m "chore: auto deploy from GitHub Actions (${GITHUB_SHA})"
-          git push "${AUTH_REPO_URL}" HEAD:main
+          git push origin HEAD:main || (git pull --rebase origin main && git push origin HEAD:main)
 
   deploy_hf_ui_space:
     needs: test
@@ -179,10 +181,12 @@ jobs:
           AUTH_REPO_URL="https://oauth2:${HF_TOKEN_CLEAN}@huggingface.co/spaces/${HF_UI_SPACE_REPO_CLEAN}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "${AUTH_REPO_URL}"
+          git pull --rebase origin main || true
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to deploy for UI Space."
             exit 0
           fi
           git commit -m "chore: auto deploy UI from GitHub Actions (${GITHUB_SHA})"
-          git push "${AUTH_REPO_URL}" HEAD:main
+          git push origin HEAD:main || (git pull --rebase origin main && git push origin HEAD:main)
