@@ -178,6 +178,17 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"เกิดข้อผิดพลาดในการประมวลผล: {str(e)}")
 
 
+@app.get("/")
+def root():
+    return {
+        "service": "insect-detector-api",
+        "status": "running",
+        "health_endpoint": "/health",
+        "predict_endpoint": "/predict",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
