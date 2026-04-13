@@ -1,0 +1,17 @@
+.venv/
+.vscode/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Local runtime artifacts
+reports/
+
+# Large local dataset
+/data/ip102/classification/
+
+# Keep ONNX runtime model for serving; skip fine-tuned checkpoint artifacts
+/model/fine_tuned_insect_v2/

@@ -1,0 +1,89 @@
+name: CI-CD
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest -q
+
+  deploy_hf_spaces:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deployment secrets
+        id: precheck
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
+        run: |
+          if [ -z "${HF_TOKEN}" ] || [ -z "${HF_SPACE_REPO}" ]; then
+            echo "HF_TOKEN or HF_SPACE_REPO is missing. Skipping deploy."
+            echo "can_deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "can_deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install rsync
+        if: steps.precheck.outputs.can_deploy == 'true'
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
+      - name: Clone Hugging Face Space
+        if: steps.precheck.outputs.can_deploy == 'true'
+        env:
+          HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
+        run: |
+          git clone https://huggingface.co/spaces/${HF_SPACE_REPO} hf-space
+
+      - name: Sync repository to Space
+        if: steps.precheck.outputs.can_deploy == 'true'
+        run: |
+          rsync -av --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.venv' \
+            --exclude '.pytest_cache' \
+            ./ hf-space/
+
+      - name: Commit and push
+        if: steps.precheck.outputs.can_deploy == 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
+        run: |
+          cd hf-space
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to deploy."
+            exit 0
+          fi
+          git commit -m "chore: auto deploy from GitHub Actions (${GITHUB_SHA})"
+          git push https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO} HEAD:main

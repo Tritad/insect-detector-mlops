@@ -1,0 +1,19 @@
+.git
+.gitignore
+.venv/
+.pytest_cache/
+.streamlit/
+**/__pycache__/
+**/*.pyc
+
+# Training data and artifacts not needed for image build context
+data/
+model/checkpoints/
+model/fine_tuned_insect/
+model/fine_tuned_insect_v2/
+model/quantized/
+model/onnx/
+
+# Keep only ONNX v2 assets used by backend image
+!model/onnx_v2/
+!model/onnx_v2/**

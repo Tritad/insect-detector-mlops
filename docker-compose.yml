@@ -1,0 +1,20 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./model:/app/model # แชร์โมเดลเผื่อมีการอัปเดต
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://backend:8000 # ชี้ไปที่ชื่อ service ของ backend
+    depends_on:
+      - backend
