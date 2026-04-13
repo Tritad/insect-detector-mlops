@@ -160,6 +160,7 @@ jobs:
           rm -rf hf-ui-build
           mkdir -p hf-ui-build/.streamlit
           cp ui/app.py hf-ui-build/app.py
+          cp ui/app.py hf-ui-build/streamlit_app.py
           cp .streamlit/config.toml hf-ui-build/.streamlit/config.toml
           cp requirements-ui-space.txt hf-ui-build/requirements.txt
           cp ui/README-space.md hf-ui-build/README.md
