@@ -60,9 +60,10 @@ jobs:
       - name: Clone Hugging Face Space
         if: steps.precheck.outputs.can_deploy == 'true'
         env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
         run: |
-          git clone https://huggingface.co/spaces/${HF_SPACE_REPO} hf-space
+          git clone https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO} hf-space
 
       - name: Sync repository to Space
         if: steps.precheck.outputs.can_deploy == 'true'
