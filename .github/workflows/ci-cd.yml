@@ -168,7 +168,9 @@ jobs:
       - name: Sync UI bundle to Space
         if: steps.precheck_ui.outputs.can_deploy == 'true'
         run: |
-          rsync -av --delete hf-ui-build/ hf-ui-space/
+          cd hf-ui-space
+          rm -rf hf-ui-space hf-ui-build
+          rsync -av --delete --exclude '.git' ../hf-ui-build/ ./
 
       - name: Commit and push UI Space
         if: steps.precheck_ui.outputs.can_deploy == 'true'
