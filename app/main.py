@@ -2,6 +2,7 @@ import asyncio
 import io
 import logging
 import os
+import urllib.request
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import asynccontextmanager
 
@@ -20,10 +21,36 @@ MODEL_DIR_CANDIDATES = [
     os.path.join(BASE_DIR, "model", "onnx_v2"),
     os.path.join(BASE_DIR, "model", "onnx"),
 ]
+DEFAULT_MODEL_ONNX_URL = (
+    "https://raw.githubusercontent.com/Tritad/insect-detector-mlops/main/model/onnx_v2/model.onnx"
+)
+
+
+def _ensure_onnx_model_file():
+    candidate_dir = next((path for path in MODEL_DIR_CANDIDATES if os.path.isdir(path)), MODEL_DIR_CANDIDATES[0])
+    os.makedirs(candidate_dir, exist_ok=True)
+    model_path = os.path.join(candidate_dir, "model.onnx")
+
+    if os.path.exists(model_path):
+        return candidate_dir
+
+    model_url = os.getenv("MODEL_ONNX_URL", DEFAULT_MODEL_ONNX_URL)
+    try:
+        logger.info("model.onnx not found; downloading from %s", model_url)
+        urllib.request.urlretrieve(model_url, model_path)
+        return candidate_dir if os.path.exists(model_path) else None
+    except Exception:
+        logger.exception("Failed to download model.onnx from %s", model_url)
+        return None
+
+
 MODEL_DIR = next(
     (path for path in MODEL_DIR_CANDIDATES if os.path.exists(os.path.join(path, "model.onnx"))),
     None,
 )
+
+if MODEL_DIR is None:
+    MODEL_DIR = _ensure_onnx_model_file()
 
 if MODEL_DIR is None:
     raise RuntimeError("ไม่พบไฟล์โมเดล ONNX (model.onnx)")

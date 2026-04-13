@@ -88,6 +88,7 @@ jobs:
             --exclude '.venv' \
             --exclude '.pytest_cache' \
             --exclude 'hf-space' \
+            --exclude 'model/onnx_v2/model.onnx' \
             ./ hf-space/
 
       - name: Commit and push
