@@ -492,7 +492,8 @@ def get_damage_symptoms(english_name: str) -> str:
     return "สังเกตใบเหลืองหรือแผลผิดปกติ การเจริญเติบโตชะงัก และรอยกัดกิน/รอยเจาะตามส่วนพืช"
 
 
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+DEFAULT_API_URL = "https://mhrt03-insect-detector-demo.hf.space"
+API_URL = os.getenv("API_URL") or st.secrets.get("API_URL", DEFAULT_API_URL)
 
 st.markdown(
     """
