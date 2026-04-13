@@ -53,9 +53,16 @@ jobs:
             echo "can_deploy=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install rsync
+      - name: Install deploy tools
         if: steps.precheck.outputs.can_deploy == 'true'
-        run: sudo apt-get update && sudo apt-get install -y rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync curl unzip
+
+      - name: Install Git Xet
+        if: steps.precheck.outputs.can_deploy == 'true'
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/huggingface/xet-core/refs/heads/main/git_xet/install.sh | sh
+          git xet install
+          git xet --version
 
       - name: Clone Hugging Face Space
         if: steps.precheck.outputs.can_deploy == 'true'
