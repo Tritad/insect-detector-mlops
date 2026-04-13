@@ -493,7 +493,25 @@ def get_damage_symptoms(english_name: str) -> str:
 
 
 DEFAULT_API_URL = "https://mhrt03-insect-detector-demo.hf.space"
-API_URL = os.getenv("API_URL") or st.secrets.get("API_URL", DEFAULT_API_URL)
+
+
+def _resolve_api_url() -> str:
+    env_url = os.getenv("API_URL")
+    if env_url:
+        return env_url
+
+    # Streamlit raises if secrets.toml doesn't exist, so guard access.
+    try:
+        secret_url = st.secrets.get("API_URL")
+        if secret_url:
+            return str(secret_url)
+    except Exception:
+        pass
+
+    return DEFAULT_API_URL
+
+
+API_URL = _resolve_api_url()
 
 st.markdown(
     """
