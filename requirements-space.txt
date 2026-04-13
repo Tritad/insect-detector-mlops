@@ -3,6 +3,5 @@ uvicorn
 python-multipart
 Pillow
 numpy
-transformers
 onnxruntime
 pydantic

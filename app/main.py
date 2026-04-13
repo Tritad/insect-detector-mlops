@@ -1,4 +1,5 @@
 import asyncio
+import json
 import io
 import logging
 import os
@@ -10,7 +11,6 @@ import numpy as np
 import onnxruntime as ort
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
-from transformers import AutoImageProcessor
 
 from .schemas import PredictionResponse
 
@@ -66,13 +66,55 @@ _executor = None
 def _get_worker_inference_components():
     global _worker_processor, _worker_session
     if _worker_processor is None:
-        _worker_processor = AutoImageProcessor.from_pretrained(MODEL_DIR)
+        preprocessor_path = os.path.join(MODEL_DIR, "preprocessor_config.json")
+        with open(preprocessor_path, "r", encoding="utf-8") as f:
+            _worker_processor = json.load(f)
     if _worker_session is None:
         session_options = ort.SessionOptions()
         session_options.intra_op_num_threads = 1
         session_options.inter_op_num_threads = 1
         _worker_session = ort.InferenceSession(MODEL_PATH, sess_options=session_options)
     return _worker_processor, _worker_session
+
+
+def _extract_target_size(preprocessor_cfg):
+    crop_size = preprocessor_cfg.get("crop_size") or {}
+    size_cfg = preprocessor_cfg.get("size") or {}
+
+    if isinstance(crop_size, dict):
+        height = int(crop_size.get("height") or crop_size.get("shortest_edge") or 224)
+        width = int(crop_size.get("width") or crop_size.get("shortest_edge") or height)
+        return width, height
+
+    if isinstance(size_cfg, dict):
+        height = int(size_cfg.get("height") or size_cfg.get("shortest_edge") or 224)
+        width = int(size_cfg.get("width") or size_cfg.get("shortest_edge") or height)
+        return width, height
+
+    if isinstance(size_cfg, int):
+        return int(size_cfg), int(size_cfg)
+
+    return 224, 224
+
+
+def _preprocess_image(img: Image.Image, preprocessor_cfg):
+    width, height = _extract_target_size(preprocessor_cfg)
+    image = img.resize((width, height), Image.BILINEAR)
+    pixel_values = np.asarray(image).astype(np.float32)
+
+    if preprocessor_cfg.get("do_rescale", True):
+        rescale_factor = float(preprocessor_cfg.get("rescale_factor", 1.0 / 255.0))
+        pixel_values = pixel_values * rescale_factor
+
+    if preprocessor_cfg.get("do_normalize", True):
+        image_mean = np.array(preprocessor_cfg.get("image_mean", [0.485, 0.456, 0.406]), dtype=np.float32)
+        image_std = np.array(preprocessor_cfg.get("image_std", [0.229, 0.224, 0.225]), dtype=np.float32)
+        pixel_values = (pixel_values - image_mean) / image_std
+
+    # NHWC -> NCHW
+    pixel_values = np.transpose(pixel_values, (2, 0, 1))
+    pixel_values = np.expand_dims(pixel_values, axis=0).astype(np.float32)
+    return pixel_values
 
 
 def _get_executor():
@@ -99,10 +141,10 @@ app = FastAPI(title="Pest/Insect Detector API", lifespan=lifespan)
 
 def predict_sync(image_bytes: bytes):
     try:
-        processor, session = _get_worker_inference_components()
+        preprocessor_cfg, session = _get_worker_inference_components()
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        inputs = processor(images=img, return_tensors="np")
-        ort_inputs = {session.get_inputs()[0].name: inputs["pixel_values"]}
+        pixel_values = _preprocess_image(img, preprocessor_cfg)
+        ort_inputs = {session.get_inputs()[0].name: pixel_values}
         outputs = session.run(None, ort_inputs)
 
         logits = outputs[0]
