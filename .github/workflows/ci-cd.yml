@@ -63,7 +63,9 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
         run: |
-          git clone https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO} hf-space
+          HF_SPACE_REPO_CLEAN="$(echo "${HF_SPACE_REPO}" | tr -d '[:space:]')"
+          REPO_URL="https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO_CLEAN}"
+          git clone "${REPO_URL}" hf-space
 
       - name: Sync repository to Space
         if: steps.precheck.outputs.can_deploy == 'true'
@@ -82,6 +84,8 @@ jobs:
           HF_SPACE_REPO: ${{ secrets.HF_SPACE_REPO }}
         run: |
           cd hf-space
+          HF_SPACE_REPO_CLEAN="$(echo "${HF_SPACE_REPO}" | tr -d '[:space:]')"
+          REPO_URL="https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO_CLEAN}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
@@ -90,4 +94,4 @@ jobs:
             exit 0
           fi
           git commit -m "chore: auto deploy from GitHub Actions (${GITHUB_SHA})"
-          git push https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO} HEAD:main
+          git push "${REPO_URL}" HEAD:main
