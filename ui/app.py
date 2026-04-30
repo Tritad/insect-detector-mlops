@@ -524,14 +524,14 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown('<p class="uploader-caption">อัปโหลดรูปแมลงได้หลายไฟล์ (JPG, JPEG, PNG) แล้วกดปุ่มจำแนกภาพ</p>', unsafe_allow_html=True)
+st.markdown('<p class="uploader-caption">อัปโหลดรูปแมลงได้หลายไฟล์ แล้วกดปุ่มจำแนกภาพ</p>', unsafe_allow_html=True)
 
 with st.container():
     col_up, col_btn = st.columns([4, 1])
     with col_up:
         uploaded_files = st.file_uploader(
             "อัปโหลดรูปภาพแมลง",
-            type=["jpg", "jpeg", "png"],
+            type=["jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "svg"],
             accept_multiple_files=True,
             label_visibility="collapsed",
         )
@@ -625,4 +625,4 @@ elif not uploaded_files:
         unsafe_allow_html=True,
     )
 
-st.markdown('<footer class="footer-note">AI Insect Classification for Field Use</footer>', unsafe_allow_html=True)
+st.markdown('<footer class="footer-note">AI Insect Classification for Rice Pests</footer>', unsafe_allow_html=True)
