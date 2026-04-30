@@ -81,15 +81,15 @@ python scripts/optimize.py
 
 ## CI/CD
 
-Workflow หลักอยู่ที่ `.github/workflows/ci-cd.yml`
+ไฟล์ workflow หลักอยู่ที่ `.github/workflows/ci-cd.yml`
 
-พฤติกรรมของ pipeline:
+ลำดับการทำงานของ pipeline มีดังนี้:
 
 - รัน `pytest` ทุกครั้งที่ push หรือเปิด pull request
 - ถ้าทดสอบผ่านและ push ไปที่ `main` จะ deploy ไปยัง Hugging Face Spaces อัตโนมัติ
 - แยก deploy เป็น 2 ส่วน คือ API Space และ UI Space
 
-Repository secrets ที่ต้องมี:
+Repository secrets ที่ต้องตั้งค่า:
 
 - `HF_TOKEN` - Hugging Face access token ที่มีสิทธิ์เขียน
 - `HF_SPACE_REPO` - repo ของ API Space ในรูปแบบ `username/space_name`
@@ -97,12 +97,12 @@ Repository secrets ที่ต้องมี:
 
 ## Performance Testing
 
-Artifacts สำหรับทดสอบโหลดอยู่ที่:
+ไฟล์สำหรับทดสอบโหลดอยู่ที่:
 
 - JMeter plan: `tests/performance/insect_api_loadtest.jmx`
 - ผลทดสอบ: `tests/performance/`
 
-ใช้ dashboard ของ JMeter เพื่อดูค่า:
+ดูผลจาก dashboard ของ JMeter ได้ตามตัวชี้วัดต่อไปนี้:
 
 - Throughput (TPS)
 - Latency (P95)
