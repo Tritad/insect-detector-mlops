@@ -108,6 +108,32 @@ Repository secrets ที่ต้องตั้งค่า:
 - Latency (P95)
 - Error rate
 
+ตัวอย่างการรัน JMeter:
+
+PowerShell (ใช้ backtick ต่อบรรทัด):
+
+```powershell
+# Local
+jmeter -n -t tests/performance/insect_api_loadtest.jmx `
+  -Jtarget=local `
+  -Jimage_path="C:/Users/Acer/Desktop/insect-detector-mlops/data/ip102/classification/test/0/00000.jpg" `
+  -l tests/performance/local_result.jtl
+
+# Cloud (Hugging Face Space)
+jmeter -n -t tests/performance/insect_api_loadtest.jmx `
+  -Jtarget=cloud `
+  -Jimage_path="C:/Users/Acer/Desktop/insect-detector-mlops/data/ip102/classification/test/0/00000.jpg" `
+  -l tests/performance/cloud_result.jtl
+```
+
+คำสั่งแบบบรรทัดเดียว (PowerShell หรือ Bash):
+
+```bash
+jmeter -n -t tests/performance/insect_api_loadtest.jmx -Jtarget=cloud -Jimage_path="C:/Users/Acer/Desktop/insect-detector-mlops/data/ip102/classification/test/0/00000.jpg" -l tests/performance/cloud_result.jtl
+```
+
+หมายเหตุ: ยังสามารถ override ค่า `protocol`, `host`, `port` ได้ด้วย `-Jprotocol=... -Jhost=... -Jport=...`
+
 ## หมายเหตุการใช้งาน
 
 - UI จะเรียก API Space เพื่อขอผลทำนาย
