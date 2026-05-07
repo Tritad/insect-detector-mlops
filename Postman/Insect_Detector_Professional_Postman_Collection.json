@@ -1,0 +1,135 @@
+{
+  "info": {
+    "name": "Insect Detector API",
+    "_postman_id": "b8c9134d-4f6b-4f95-87bb-2c98e31db56a",
+    "description": "Professional Postman collection for testing the Insect Detector API on local Docker and cloud deployment.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "local_base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "cloud_base_url",
+      "value": "https://mhrt03-insect-detector-demo.hf.space",
+      "type": "string"
+    },
+    {
+      "key": "image_path",
+      "value": "C:/Users/Acer/Desktop/sample.jpg",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Local Docker API",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{local_base_url}}/health"
+          },
+          "response": []
+        },
+        {
+          "name": "Predict Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "{{image_path}}"
+                }
+              ]
+            },
+            "url": "{{local_base_url}}/predict",
+            "description": "Upload an insect image to the local Docker API."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cloud API",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{cloud_base_url}}/health"
+          },
+          "response": []
+        },
+        {
+          "name": "Predict Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "{{image_path}}"
+                }
+              ]
+            },
+            "url": "{{cloud_base_url}}/predict",
+            "description": "Upload an insect image to the deployed cloud API."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Validation Tests",
+      "item": [
+        {
+          "name": "Reject Non-Image File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "text",
+                  "value": "this is not an image"
+                }
+              ]
+            },
+            "url": "{{local_base_url}}/predict",
+            "description": "Expected response: 400 or 422 validation error."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
