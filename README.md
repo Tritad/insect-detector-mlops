@@ -4,7 +4,15 @@ sdk: docker
 app_port: 7860
 ---
 
+![Insect Detector Hero](assets/Image%20RB.png)
+
 # Insect Detector MLOps
+
+[![CI-CD](https://github.com/Tritad/insect-detector-mlops/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/Tritad/insect-detector-mlops/actions/workflows/ci-cd.yml)
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-009688)
+![Streamlit](https://img.shields.io/badge/Streamlit-UI-FF4B4B)
+![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED)
 
 โปรเจกต์นี้เป็นระบบจำแนกภาพแมลงแบบ end-to-end สำหรับงาน MLOps โดยแยกเป็น API และ UI คนละ Space บน Hugging Face พร้อม CI/CD, ONNX inference, และชุดทดสอบประสิทธิภาพด้วย JMeter
 
@@ -15,6 +23,29 @@ app_port: 7860
 - Model runtime: ONNX + onnxruntime เพื่อให้รันบน CPU ได้เบาและเร็ว
 - Deployment: GitHub Actions deploy อัตโนมัติไปยัง Hugging Face Spaces
 - Performance test: JMeter สำหรับทดสอบ throughput, latency และ error rate
+
+## Tech Stack
+
+- API: FastAPI, Pydantic
+- UI: Streamlit
+- Model runtime: ONNX Runtime, NumPy, Pillow
+- MLOps/CI: GitHub Actions, Hugging Face Spaces
+- Testing/QA: Pytest, JMeter, Postman
+
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+  User[User] --> UI[Streamlit UI]
+  UI -->|/predict| API[FastAPI API]
+  API -->|Preprocess| Preprocess[Resize + Normalize]
+  Preprocess --> ONNX[ONNX Runtime]
+  ONNX --> Result[Prediction JSON]
+  Result --> UI
+
+  CI[GitHub Actions] -->|Deploy| HF_API[HF Space: API]
+  CI -->|Deploy| HF_UI[HF Space: UI]
+```
 
 ## สิ่งที่ทำได้
 
@@ -51,12 +82,37 @@ docker compose up --build
 - API: http://localhost:8000
 - UI: http://localhost:8501
 
-### ทดลองเรียก API ด้วย cURL
+### cURL Commands
+
+ตรวจสอบสถานะ API บน Local Docker:
 ```bash
-curl -X POST "http://localhost:8000/predict" \
-  -H "accept: application/json" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@sample.jpg"
+curl.exe http://127.0.0.1:8000/health
+```
+
+เรียก `/predict` บน Local Docker พร้อมส่งไฟล์ภาพจริง:
+```bash
+curl.exe -X POST "http://127.0.0.1:8000/predict" \
+  -F "file=@tests\performance\test_images\sample.jpg;type=image/jpeg"
+```
+
+ตรวจสอบสถานะ API บน Hugging Face Space:
+```bash
+curl.exe https://mhrt03-insect-detector-demo.hf.space/health
+```
+
+เรียก `/predict` บน Hugging Face Space พร้อมส่งไฟล์ภาพจริง:
+```bash
+curl.exe -X POST "https://mhrt03-insect-detector-demo.hf.space/predict" \
+  -F "file=@tests\performance\test_images\sample.jpg;type=image/jpeg"
+```
+
+### Example Response JSON
+```json
+{
+  "prediction_class": 12,
+  "confidence": 0.9876,
+  "status": "success"
+}
 ```
 
 ## การพัฒนาและปรับแต่งโมเดล
@@ -150,4 +206,4 @@ jmeter -n -t tests/performance/insect_api_loadtest.jmx -Jtarget=cloud -Jimage_pa
 
 ## License / Usage
 
-โปรเจกต์นี้จัดทำขึ้นเพื่อการศึกษาและงานวิจัยด้าน MLOps / image classification เป็นหลัก หากจะนำไปใช้งานจริง ควรทดสอบกับข้อมูลจริงและตรวจสอบการเลือกสารเคมีตามข้อกำหนดท้องถิ่นก่อนเสมอ
+โปรเจกต์นี้จัดทำขึ้นเพื่อการศึกษา วิจัย และสาธิตแนวทางการพัฒนาระบบ MLOps สำหรับงาน image classification เป็นหลัก หากจะนำไปใช้งานจริง ควรทดสอบกับข้อมูลจริงและตรวจสอบการเลือกสารเคมีตามข้อกำหนดท้องถิ่นก่อนเสมอ

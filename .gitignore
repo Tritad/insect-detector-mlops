@@ -10,6 +10,7 @@ __pycache__/
 # Local runtime artifacts
 reports/
 sample.jpg
+!tests/performance/test_images/sample.jpg
 tests/performance/*_result.jtl
 tests/performance/*_dashboard/
 
